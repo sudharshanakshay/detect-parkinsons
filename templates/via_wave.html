@@ -54,7 +54,7 @@
                 <h4>Preview Uploaded</h4>
                 {% if filename %}
                 <div>
-                    <img src="{{ url_for('static', filename='/Images/'+filename) }}">
+                    <img src="{{ url_for('static', filename='/Images/'+filename) }}" style="max-width: 256px; max-height: 512px;">
                 </div>
                 {% endif %}
             </div>

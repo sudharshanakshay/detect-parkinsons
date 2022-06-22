@@ -21,23 +21,46 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 print('loading saved model...')
 spiral_modal = tf.keras.models.load_model('saved_model/model_spiral')
+wave_modal = tf.keras.models.load_model('saved_model/model_wave')
 # spiral_modal = ''
 
 
 app.config["UPLOAD_FOLDER"] = "static/Images"
 
 
-@app.route('/date', methods=['GET', 'POST', 'OPTIONS'])
-@cross_origin()
-def get_time():
-    x = datetime.datetime.now()
-    # Returning an api for showing in  reactjs
-    return {
-        'Name':"geek", 
-        "Age":"22",
-        "Date":x, 
-        "programming":"python"
-        }
+def wave_modal_func(img_path):
+    image=load_img(img_path ,target_size=(100,100))
+    image = img_to_array(image)
+    image = image/255.0
+    prediction_image = np.array(image)
+    prediction_image = np.expand_dims(image, axis=0)
+    print('\rprocess image done.')
+    print('Predict image...')
+    prediction = wave_modal.predict(prediction_image)
+    print('\r Predict image  done.')
+    value = np.argmax(prediction)
+
+    pd_result = mapper(value)
+    print("Prediction is {}.".format(pd_result))
+
+    return pd_result
+
+def spiral_modal_func(img_path):
+    image=load_img(img_path ,target_size=(100,100))
+    image = img_to_array(image)
+    image = image/255.0
+    prediction_image = np.array(image)
+    prediction_image = np.expand_dims(image, axis=0)
+    print('\rprocess image done.')
+    print('Predict image...')
+    prediction = spiral_modal.predict(prediction_image)
+    print('\r Predict image  done.')
+    value = np.argmax(prediction)
+
+    pd_result = mapper(value)
+    print("Prediction is {}.".format(pd_result))
+
+    return pd_result
 
 
 def mapper(value):
@@ -55,55 +78,15 @@ def mapper(value):
 	reverse_mapping = dict(zip(N, Name)) 
 	return reverse_mapping[value]
 
+
+
 @app.route('/', methods=["GET", "POST"])
 @app.route('/wave', methods=["GET", "POST"])
 def via_wave():
-    # if request.method == "POST":
-
-    #     image = request.files['file']
-
-    #     if image.filename == '':
-    #         print("Image must have a file name")
-    #         # return redirect(request.url)
-
-    #         filename = secure_filename(image.filename)
-
-    #         basedir = os.path.abspath(os.path.dirname(__file__))
-    #         image.save(os.path.join(
-    #             basedir, app.config["UPLOAD_FOLDER"], filename))
-    #         img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
-
-    #         final = myModal(img_path)
-    #     else : 
-    #         return render_template('via_wave')
-
-    # return render_template('output.html', text='Analysis of the Image', img_src=f"data:image/png;base64,{view_classify(image)}" )
-    # return render_template('output.html', text=final )
     return render_template('via_wave.html' )
 
 @app.route('/spiral', methods=["GET", "POST"])
 def via_spiral():
-    # if request.method == "POST":
-
-    #     image = request.files['file']
-
-    #     if image.filename == '':
-    #         print("Image must have a file name")
-    #         # return redirect(request.url)
-
-    #         filename = secure_filename(image.filename)
-
-    #         basedir = os.path.abspath(os.path.dirname(__file__))
-    #         image.save(os.path.join(
-    #             basedir, app.config["UPLOAD_FOLDER"], filename))
-    #         img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
-
-    #         final = myModal(img_path)
-    #     else : 
-    #         return render_template('via_wave')
-
-    # return render_template('output.html', text='Analysis of the Image', img_src=f"data:image/png;base64,{view_classify(image)}" )
-    # return render_template('output.html', text=final )
     return render_template('via_spiral.html' )
 
 
@@ -124,9 +107,8 @@ def diagnose_wave():
             basedir, app.config["UPLOAD_FOLDER"], filename))
         img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
 
-    final = myModal(img_path)
+    final = wave_modal_func(img_path)
 
-    # return render_template('output.html', text='Analysis of the Image', img_src=f"data:image/png;base64,{view_classify(image)}" )
     return render_template('via_wave.html', result=final, filename=filename )
 
 
@@ -147,9 +129,8 @@ def diagnose_spiral():
             basedir, app.config["UPLOAD_FOLDER"], filename))
         img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
 
-    final = myModal(img_path)
+    final = spiral_modal_func(img_path)
 
-    # return render_template('output.html', text='Analysis of the Image', img_src=f"data:image/png;base64,{view_classify(image)}" )
     return render_template('via_spiral.html', result=final, filename=filename )
 
 @app.route('/home', methods=["GET", "POST"])
@@ -169,49 +150,9 @@ def upload_image():
             basedir, app.config["UPLOAD_FOLDER"], filename))
         img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
 
-    final = myModal(img_path)
+    final = wave_modal_func(img_path)
 
-    # return render_template('output.html', text='Analysis of the Image', img_src=f"data:image/png;base64,{view_classify(image)}" )
     return render_template('output.html', text=final )
-
-
-def myModal(img_path):
-    # image = Image.open(image, target_size=(100,100))
-    image=load_img(img_path ,target_size=(100,100))
-    image = img_to_array(image)
-    image = image/255.0
-    prediction_image = np.array(image)
-    prediction_image = np.expand_dims(image, axis=0)
-    print('\r process image done.')
-
-    print('Predict image...')
-    prediction = spiral_modal.predict(prediction_image)
-    print('\r Predict image  done.')
-    value = np.argmax(prediction)
-    move_name=mapper(value)
-    print("Prediction is {}.".format(move_name))
-
-    return move_name
-
-
-@app.route('/test', methods=['GET', 'POST', 'OPTIONS'])
-@cross_origin()
-def test():
-    print("---------------- test ----------------")
-    
-    req = request.get_json()
-    # print(req['type'])
-    print(req)
-
-
-
-    # return { "status" : req}
-    return {
-        "msg" : 'hello from server'
-    }
-
-
-
 
 
 
