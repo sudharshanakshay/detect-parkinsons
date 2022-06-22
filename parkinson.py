@@ -162,9 +162,11 @@ model4.save_weights(checkpoint_wave_path.format(epoch=0))
 latest = tf.train.latest_checkpoint(checkpoint_wave_dir)
 model4.load_weights(latest)
 
-his4=model4.fit(datagen.flow(trainx_wv,trainy_wv,batch_size=32),validation_data=(testx_wv,testy_wv),epochs=10, callbacks=[cp_wave_callback])
+his4=model4.fit(datagen.flow(trainx_wv,trainy_wv,batch_size=32),validation_data=(testx_wv,testy_wv),epochs=2, callbacks=[cp_wave_callback])
 
-model4.save('./saved_model/model_wave')
+import tensorflowjs as tfjs
+tfjs.converters.save_keras_model(model4, './js/wave/')
+#model4.save('./saved_model/model_wave')
 # ------------ train wave modal ends here ------------
 
 
@@ -184,7 +186,7 @@ his3=model3.fit(datagen.flow(trainx_sp,trainy_sp,batch_size=32),validation_data=
 
 model3.save('./saved_model/model_spiral')
 
-# ------------ train wave modal ends here ------------
+# ------------ train spiral modal ends here ------------
 
 
 
