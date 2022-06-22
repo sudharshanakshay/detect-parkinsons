@@ -133,26 +133,6 @@ def diagnose_spiral():
 
     return render_template('via_spiral.html', result=final, filename=filename )
 
-@app.route('/home', methods=["GET", "POST"])
-def upload_image():
-    if request.method == "POST":
-
-        image = request.files['file']
-
-        if image.filename == '':
-            print("Image must have a file name")
-            return redirect(request.url)
-
-        filename = secure_filename(image.filename)
-
-        basedir = os.path.abspath(os.path.dirname(__file__))
-        image.save(os.path.join(
-            basedir, app.config["UPLOAD_FOLDER"], filename))
-        img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
-
-    final = wave_modal_func(img_path)
-
-    return render_template('output.html', text=final )
 
 
 
