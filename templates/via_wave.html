@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Diagnose Spiral Drawing</title>
 </head>
 
 <body>
@@ -26,6 +26,10 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/spiral">Spiral drawing</a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/voice"> Voice Data</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -35,7 +39,7 @@
     <div class="container">
         <div class="row">
             <div class="col">
-                <h3>Draw Waves in paper, scan and Upload here ..</h3>
+                <h3>Draw Waves in paper, scan and Upload here</h3>
                 <form method="post" action="/diagnose_wave" enctype="multipart/form-data">
                     <input type="file" name="file" autocomplete="off" required>
                     <br/><br/>
@@ -46,15 +50,24 @@
                 <br/><br/>
 
                 {% if result %}
-                <label>Result :&nbsp;</label>
-                <h5>{{ result }}</h5>
+                {% if (result == 'Parkinsons') %}
+                <label style="color: red;">Result :&nbsp;</label>
+                <h5 style="color: red;">{{ result }}</h5>
+                {% else %}  
+                <label style="color: green;">Result :&nbsp;</label>
+                <h5 style="color: green;">{{ result }}</h5>
                 {% endif %}
+                {% else %}
+                <h5 style="color: green;"> Result Section </h5>
+                {% endif %}
+
+
             </div>
             <div class="col">
                 <h4>Preview Uploaded</h4>
                 {% if filename %}
                 <div>
-                    <img src="{{ url_for('static', filename='/Images/'+filename) }}" style="max-width: 256px; max-height: 512px;">
+                    <img src="{{ url_for('static', filename='/Images/'+filename) }}" style="max-width: 256px; max-height: 512px; border-style: solid; border-color: green; border-width: 1px; padding: 2px;">
                 </div>
                 {% endif %}
             </div>

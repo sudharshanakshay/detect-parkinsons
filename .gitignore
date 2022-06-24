@@ -4,4 +4,5 @@
 /saved_model
 /lib*
 /static
-
+/archive_voice
+/__pycache__

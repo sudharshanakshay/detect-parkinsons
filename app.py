@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import os
+from posixpath import split
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from flask import Flask, request, make_response, Response, jsonify, redirect, render_template
@@ -13,6 +14,8 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from PIL import Image
 from werkzeug.utils import secure_filename
+import pickle
+import re
 
 
 app = Flask(__name__)
@@ -22,6 +25,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 print('loading saved model...')
 spiral_modal = tf.keras.models.load_model('saved_model/model_spiral')
 wave_modal = tf.keras.models.load_model('saved_model/model_wave')
+filename = './saved_model/finalized_model.sav'
+voice_model = pickle.load(open(filename, 'rb'))
 # spiral_modal = ''
 
 
@@ -29,7 +34,7 @@ app.config["UPLOAD_FOLDER"] = "static/Images"
 
 
 def wave_modal_func(img_path):
-    image=load_img(img_path ,target_size=(100,100))
+    image = load_img(img_path, target_size=(100, 100))
     image = img_to_array(image)
     image = image/255.0
     prediction_image = np.array(image)
@@ -45,8 +50,9 @@ def wave_modal_func(img_path):
 
     return pd_result
 
+
 def spiral_modal_func(img_path):
-    image=load_img(img_path ,target_size=(100,100))
+    image = load_img(img_path, target_size=(100, 100))
     image = img_to_array(image)
     image = image/255.0
     prediction_image = np.array(image)
@@ -57,27 +63,42 @@ def spiral_modal_func(img_path):
     print('\r Predict image  done.')
     value = np.argmax(prediction)
 
+    # print(value)
     pd_result = mapper(value)
     print("Prediction is {}.".format(pd_result))
 
     return pd_result
 
 
-def mapper(value):
-	dir_sp_train = './archive/spiral/testing'
-	Name = []
-	for file in os.listdir(dir_sp_train):
-		Name += [file]
-	print(Name)
-	print(len(Name))
-	
-	N = []
-	for i in range(len(Name)):
-		N += [i]
-	
-	reverse_mapping = dict(zip(N, Name)) 
-	return reverse_mapping[value]
+def voice_modal_func(text):
+    # image=load_img(img_path ,target_size=(100,100))
+    # image = img_to_array(image)
+    # image = image/255.0
+    # prediction_image = np.array(image)
+    # prediction_image = np.expand_dims(image, axis=0)
+    # print('\rprocess image done.')
+    # print('Predict image...')
+    prediction = voice_model.predict(text)
+    print('\r Predict   done.')
+    # value = np.argmax(prediction)
 
+    # print(value)
+    # pd_result = mapper(value)
+    print("Prediction is {}.".format(prediction))
+
+    if (prediction[0] == 0):
+        return "Healthy"
+    else:
+        return "Parkinsons" 
+
+
+def mapper(value):
+    Name = ['Parkinsons', 'Healthy']
+    if value:
+        return Name[1]
+    else : 
+        return Name[0]
+	
 
 
 @app.route('/', methods=["GET", "POST"])
@@ -89,6 +110,9 @@ def via_wave():
 def via_spiral():
     return render_template('via_spiral.html' )
 
+@app.route('/voice', methods=["GET", "POST"])
+def via_voice():
+    return render_template('via_voice.html' )
 
 @app.route('/diagnose_wave', methods=["GET", "POST"])
 def diagnose_wave():
@@ -133,7 +157,43 @@ def diagnose_spiral():
 
     return render_template('via_spiral.html', result=final, filename=filename )
 
+@app.route('/diagnose_voice', methods=["GET", "POST"])
+def diagnose_voice():
+    text = request.form['voice']
 
+    print("================================")
+    split_text = re.split(',', text)
+    print(split_text)
+    print("================================")
+
+    not_final = list()
+    final = list()
+
+
+    for x in split_text:
+        not_final.append(float(x))
+
+    final.append(not_final)
+    # if request.method == "POST":
+
+        # text = request.files['voice']
+
+        # print(text)
+
+        # if image.filename == '':
+        #     print("Image must have a file name")
+        #     return redirect(request.url)
+
+        # filename = secure_filename(image.filename)
+
+        # basedir = os.path.abspath(os.path.dirname(__file__))
+        # image.save(os.path.join(
+        #     basedir, app.config["UPLOAD_FOLDER"], filename))
+        # img_path = os.path.join(basedir, app.config["UPLOAD_FOLDER"], filename)
+
+    result = voice_modal_func(final)
+
+    return render_template('via_voice.html', result=result)
 
 
 
